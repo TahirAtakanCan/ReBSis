@@ -6,7 +6,9 @@ import ProtectedRoute from './components/ProtectedRoute'
 import { useAuth } from './lib/auth'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
+import Ogrenciler from './pages/Ogrenciler'
 import Onboarding from './pages/Onboarding'
+import Siniflar from './pages/Siniflar'
 import Signup from './pages/Signup'
 
 function SessionOnlyRoute({ children }: { children: ReactNode }) {
@@ -25,15 +27,6 @@ function SessionOnlyRoute({ children }: { children: ReactNode }) {
   }
 
   return <>{children}</>
-}
-
-function PlaceholderPage({ title }: { title: string }) {
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h1 className="text-xl font-semibold text-slate-900">{title}</h1>
-      <p className="mt-2 text-sm text-slate-600">Bu sayfa yakında içerikle doldurulacak.</p>
-    </div>
-  )
 }
 
 export default function App() {
@@ -59,8 +52,8 @@ export default function App() {
         }
       >
         <Route path="/" element={<Dashboard />} />
-        <Route path="/ogrenciler" element={<PlaceholderPage title="Öğrenciler" />} />
-        <Route path="/siniflar" element={<PlaceholderPage title="Sınıflar" />} />
+        <Route path="/ogrenciler" element={<Ogrenciler />} />
+        <Route path="/siniflar" element={<Siniflar />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
