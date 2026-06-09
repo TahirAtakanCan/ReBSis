@@ -8,13 +8,14 @@ import { useAuth } from './lib/auth'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Ogrenciler from './pages/Ogrenciler'
+import OgrenciIceAktar from './pages/OgrenciIceAktar'
 import OgretmenEkle from './pages/OgretmenEkle'
 import Onboarding from './pages/Onboarding'
 import Siniflar from './pages/Siniflar'
 import Signup from './pages/Signup'
 
 function SessionOnlyRoute({ children }: { children: ReactNode }) {
-  const { loading, session } = useAuth()
+  const { loading, session, profile } = useAuth()
 
   if (loading) {
     return (
@@ -26,6 +27,10 @@ function SessionOnlyRoute({ children }: { children: ReactNode }) {
 
   if (!session) {
     return <Navigate to="/login" replace />
+  }
+
+  if (profile) {
+    return <Navigate to="/" replace />
   }
 
   return <>{children}</>
@@ -63,6 +68,14 @@ export default function App() {
           }
         />
         <Route path="/ogrenciler" element={<Ogrenciler />} />
+        <Route
+          path="/ogrenci-ice-aktar"
+          element={
+            <RequireYetki gerekenRoller={['kurum_sahibi']} gerekenYetki="ogrenci_yonet">
+              <OgrenciIceAktar />
+            </RequireYetki>
+          }
+        />
         <Route path="/siniflar" element={<Siniflar />} />
       </Route>
 

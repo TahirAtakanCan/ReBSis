@@ -17,6 +17,12 @@ const menuItems: MenuItem[] = [
     gerekenRoller: ['kurum_sahibi'],
     gerekenYetki: 'kullanici_yonet',
   },
+  {
+    to: '/ogrenci-ice-aktar',
+    label: 'Öğrenci İçe Aktar',
+    gerekenRoller: ['kurum_sahibi'],
+    gerekenYetki: 'ogrenci_yonet',
+  },
   { to: '/ogrenciler', label: 'Öğrenciler', gerekenRoller: ['kurum_sahibi', 'yonetici', 'ogretmen'] },
   { to: '/siniflar', label: 'Sınıflar', gerekenRoller: ['kurum_sahibi', 'yonetici', 'ogretmen'] },
 ]
