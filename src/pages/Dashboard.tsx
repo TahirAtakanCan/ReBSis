@@ -9,6 +9,7 @@ export default function Dashboard() {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
       <h1 className="text-2xl font-semibold text-slate-900">Dashboard</h1>
+      <div className="mt-3 rounded bg-red-500 p-4 text-white">test</div>
       <p className="mt-2 text-sm text-slate-600">
         Auth + RLS kontrolü için profil bilgileri:
       </p>
