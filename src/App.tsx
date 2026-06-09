@@ -3,10 +3,12 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
+import RequireYetki from './components/RequireYetki'
 import { useAuth } from './lib/auth'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Ogrenciler from './pages/Ogrenciler'
+import OgretmenEkle from './pages/OgretmenEkle'
 import Onboarding from './pages/Onboarding'
 import Siniflar from './pages/Siniflar'
 import Signup from './pages/Signup'
@@ -52,6 +54,14 @@ export default function App() {
         }
       >
         <Route path="/" element={<Dashboard />} />
+        <Route
+          path="/ogretmenler"
+          element={
+            <RequireYetki gerekenRoller={['kurum_sahibi']} gerekenYetki="kullanici_yonet">
+              <OgretmenEkle />
+            </RequireYetki>
+          }
+        />
         <Route path="/ogrenciler" element={<Ogrenciler />} />
         <Route path="/siniflar" element={<Siniflar />} />
       </Route>

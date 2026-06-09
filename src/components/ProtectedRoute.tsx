@@ -8,9 +8,9 @@ type ProtectedRouteProps = {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { loading, profileLoading, session, profile } = useAuth()
+  const { loading, session, profile } = useAuth()
 
-  if (loading || profileLoading) {
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-100">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-300 border-t-slate-900" />

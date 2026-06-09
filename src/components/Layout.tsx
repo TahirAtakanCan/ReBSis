@@ -1,17 +1,24 @@
 import { NavLink, Outlet } from 'react-router-dom'
 
-import { useAuth } from '../lib/auth'
+import { kullaniciYetkiliMi, useAuth } from '../lib/auth'
 
 type MenuItem = {
   to: string
   label: string
-  allowedRoles: string[]
+  gerekenRoller?: string[]
+  gerekenYetki?: string
 }
 
 const menuItems: MenuItem[] = [
-  { to: '/', label: 'Dashboard', allowedRoles: ['kurum_sahibi', 'yonetici', 'ogretmen'] },
-  { to: '/ogrenciler', label: 'Öğrenciler', allowedRoles: ['kurum_sahibi', 'yonetici', 'ogretmen'] },
-  { to: '/siniflar', label: 'Sınıflar', allowedRoles: ['kurum_sahibi', 'yonetici', 'ogretmen'] },
+  { to: '/', label: 'Dashboard', gerekenRoller: ['kurum_sahibi', 'yonetici', 'ogretmen'] },
+  {
+    to: '/ogretmenler',
+    label: 'Öğretmenler',
+    gerekenRoller: ['kurum_sahibi'],
+    gerekenYetki: 'kullanici_yonet',
+  },
+  { to: '/ogrenciler', label: 'Öğrenciler', gerekenRoller: ['kurum_sahibi', 'yonetici', 'ogretmen'] },
+  { to: '/siniflar', label: 'Sınıflar', gerekenRoller: ['kurum_sahibi', 'yonetici', 'ogretmen'] },
 ]
 
 function getDisplayName(ad: string | null, soyad: string | null, fallback: string) {
@@ -22,8 +29,9 @@ function getDisplayName(ad: string | null, soyad: string | null, fallback: strin
 export default function Layout() {
   const { profile, user, signOut } = useAuth()
 
-  const rol = profile?.rol ?? 'kurum_sahibi'
-  const visibleMenu = menuItems.filter((item) => item.allowedRoles.includes(rol))
+  const visibleMenu = menuItems.filter((item) =>
+    kullaniciYetkiliMi(profile, { gerekenRoller: item.gerekenRoller, gerekenYetki: item.gerekenYetki })
+  )
   const kullaniciAdi = getDisplayName(profile?.ad ?? null, profile?.soyad ?? null, user?.email ?? 'Kullanıcı')
   const kurumAdi = profile?.kurum_adi ?? profile?.kurum_id ?? 'Kurum'
 

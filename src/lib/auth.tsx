@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import type { Session, User } from '@supabase/supabase-js'
+import type { AuthChangeEvent, Session, User } from '@supabase/supabase-js'
 
 import { supabase } from './supabase'
 
@@ -16,9 +16,34 @@ export type Profile = {
   kurum_id: string | null
   kurum_adi?: string | null
   rol: string | null
+  yetkiler?: Record<string, boolean> | null
   ad: string | null
   soyad: string | null
   eposta: string | null
+}
+
+type YetkiKontrolParams = {
+  gerekenRoller?: string[]
+  gerekenYetki?: string
+}
+
+export function kullaniciYetkiliMi(
+  profile: Profile | null,
+  { gerekenRoller, gerekenYetki }: YetkiKontrolParams = {}
+) {
+  if (!profile) return false
+  if (profile.rol === 'kurum_sahibi') return true
+
+  const rolUygun =
+    Array.isArray(gerekenRoller) && gerekenRoller.length > 0
+      ? gerekenRoller.includes(profile.rol ?? '')
+      : false
+  const yetkiUygun = gerekenYetki
+    ? profile.yetkiler?.[gerekenYetki] === true
+    : false
+
+  if (!gerekenRoller?.length && !gerekenYetki) return true
+  return rolUygun || yetkiUygun
 }
 
 type AuthContextValue = {
@@ -41,35 +66,37 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [profileLoading, setProfileLoading] = useState(true)
+  const [authLoading, setAuthLoading] = useState(true)
+  const [profileLoading, setProfileLoading] = useState(false)
+  const [profileFetched, setProfileFetched] = useState(false)
 
-  const refreshProfile = useCallback(async () => {
-    const userId = user?.id
-
-    if (!userId) {
+  const refreshProfile = useCallback(async (): Promise<Profile | null> => {
+    if (!user?.id) {
       setProfile(null)
       setProfileLoading(false)
+      setProfileFetched(true)
       return null
     }
 
+    setProfileFetched(false)
     setProfileLoading(true)
-
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', userId)
+      .eq('id', user.id)
       .maybeSingle()
 
     if (error) {
       setProfile(null)
       setProfileLoading(false)
+      setProfileFetched(true)
       throw error
     }
 
     const nextProfile = (data as Profile | null) ?? null
     setProfile(nextProfile)
     setProfileLoading(false)
+    setProfileFetched(true)
     return nextProfile
   }, [user?.id])
 
@@ -84,33 +111,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (error) {
         setSession(null)
         setUser(null)
-        setProfile(null)
-        setProfileLoading(false)
       } else {
         setSession(data.session)
-        const nextUser = data.session?.user ?? null
-        setUser(nextUser)
-        if (!nextUser) {
-          setProfile(null)
-          setProfileLoading(false)
-        }
+        setUser(data.session?.user ?? null)
       }
 
-      setLoading(false)
+      setAuthLoading(false)
     }
 
     void loadSession()
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, nextSession) => {
       setSession(nextSession)
       setUser(nextSession?.user ?? null)
-      if (!nextSession?.user) {
+      if (event === 'SIGNED_OUT') {
         setProfile(null)
+        setProfileFetched(false)
         setProfileLoading(false)
+      } else if (nextSession?.user) {
+        setProfileFetched(false)
       }
-      setLoading(false)
+      setAuthLoading(false)
     })
 
     return () => {
@@ -124,16 +147,48 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   useEffect(() => {
-    if (!user) {
-      setProfile(null)
+    let isCancelled = false
+
+    const loadProfile = async () => {
+      if (!user?.id) {
+        if (!isCancelled) {
+          setProfile(null)
+          setProfileFetched(true)
+          setProfileLoading(false)
+        }
+        return
+      }
+
+      if (!isCancelled) {
+        setProfileLoading(true)
+        setProfileFetched(false)
+      }
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      if (isCancelled) return
+
+      if (error) {
+        setProfile(null)
+      } else {
+        setProfile((data as Profile | null) ?? null)
+      }
+      setProfileFetched(true)
       setProfileLoading(false)
-      return
     }
 
-    void refreshProfile().catch(() => {
-      setProfile(null)
-    })
-  }, [refreshProfile, user])
+    void loadProfile()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [user?.id])
+
+  const loading = authLoading || profileLoading || (!!user && !profileFetched)
 
   const value = useMemo(
     () => ({
