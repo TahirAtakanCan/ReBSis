@@ -14,6 +14,7 @@ import { supabase } from './supabase'
 export type Profile = {
   id: string
   kurum_id: string | null
+  kurum_adi?: string | null
   rol: string | null
   ad: string | null
   soyad: string | null
