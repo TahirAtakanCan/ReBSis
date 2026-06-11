@@ -11,6 +11,8 @@ import Ogrenciler from './pages/Ogrenciler'
 import OgrenciIceAktar from './pages/OgrenciIceAktar'
 import OgretmenEkle from './pages/OgretmenEkle'
 import Onboarding from './pages/Onboarding'
+import Devamsizlik from './pages/Devamsizlik'
+import DevamsizlikRapor from './pages/DevamsizlikRapor'
 import Siniflar from './pages/Siniflar'
 import Signup from './pages/Signup'
 
@@ -77,6 +79,15 @@ export default function App() {
           }
         />
         <Route path="/siniflar" element={<Siniflar />} />
+        <Route
+          path="/devamsizlik"
+          element={
+            <RequireYetki gerekenRoller={['kurum_sahibi', 'ogretmen']} gerekenYetki="devamsizlik_yonet">
+              <Devamsizlik />
+            </RequireYetki>
+          }
+        />
+        <Route path="/devamsizlik-rapor" element={<DevamsizlikRapor />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

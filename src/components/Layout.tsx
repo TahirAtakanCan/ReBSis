@@ -25,6 +25,13 @@ const menuItems: MenuItem[] = [
   },
   { to: '/ogrenciler', label: 'Öğrenciler', gerekenRoller: ['kurum_sahibi', 'yonetici', 'ogretmen'] },
   { to: '/siniflar', label: 'Sınıflar', gerekenRoller: ['kurum_sahibi', 'yonetici', 'ogretmen'] },
+  {
+    to: '/devamsizlik',
+    label: 'Devamsızlık',
+    gerekenRoller: ['kurum_sahibi', 'ogretmen'],
+    gerekenYetki: 'devamsizlik_yonet',
+  },
+  { to: '/devamsizlik-rapor', label: 'Devamsızlık Raporu', gerekenRoller: ['kurum_sahibi', 'yonetici', 'ogretmen'] },
 ]
 
 function getDisplayName(ad: string | null, soyad: string | null, fallback: string) {
