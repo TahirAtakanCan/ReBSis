@@ -20,6 +20,7 @@ export type Profile = {
   ad: string | null
   soyad: string | null
   eposta: string | null
+  is_superadmin?: boolean | null
 }
 
 type YetkiKontrolParams = {
@@ -52,6 +53,8 @@ type AuthContextValue = {
   profile: Profile | null
   loading: boolean
   profileLoading: boolean
+  kurumAktif: boolean
+  kurumAktifLoading: boolean
   signOut: () => Promise<void>
   refreshProfile: () => Promise<Profile | null>
 }
@@ -69,6 +72,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [authLoading, setAuthLoading] = useState(true)
   const [profileLoading, setProfileLoading] = useState(false)
   const [profileFetched, setProfileFetched] = useState(false)
+  const [kurumAktif, setKurumAktif] = useState(false)
+  const [kurumAktifLoading, setKurumAktifLoading] = useState(false)
 
   const refreshProfile = useCallback(async (): Promise<Profile | null> => {
     if (!user?.id) {
@@ -130,6 +135,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setProfile(null)
         setProfileFetched(false)
         setProfileLoading(false)
+        setKurumAktif(false)
+        setKurumAktifLoading(false)
       } else if (nextSession?.user) {
         setProfileFetched(false)
       }
@@ -188,6 +195,37 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [user?.id])
 
+  useEffect(() => {
+    let isCancelled = false
+
+    const kontrolKurumAktif = async () => {
+      if (!profile) {
+        if (!isCancelled) {
+          setKurumAktif(false)
+          setKurumAktifLoading(false)
+        }
+        return
+      }
+
+      if (!isCancelled) {
+        setKurumAktifLoading(true)
+      }
+
+      const { data, error } = await supabase.rpc('kurum_aktif_mi')
+
+      if (!isCancelled) {
+        setKurumAktif(error ? false : (data ?? false))
+        setKurumAktifLoading(false)
+      }
+    }
+
+    void kontrolKurumAktif()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [profile?.id])
+
   const loading = authLoading || profileLoading || (!!user && !profileFetched)
 
   const value = useMemo(
@@ -197,10 +235,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       profile,
       loading,
       profileLoading,
+      kurumAktif,
+      kurumAktifLoading,
       signOut,
       refreshProfile,
     }),
-    [loading, profile, profileLoading, refreshProfile, session, signOut, user]
+    [kurumAktif, kurumAktifLoading, loading, profile, profileLoading, refreshProfile, session, signOut, user]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

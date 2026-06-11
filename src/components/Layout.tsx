@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 
+import AbonelikKoruma from './AbonelikKoruma'
 import { kullaniciYetkiliMi, useAuth } from '../lib/auth'
 
 type MenuItem = {
@@ -18,6 +19,21 @@ type MenuSection = {
 const MUHASEBE_YETKI = {
   gerekenRoller: ['kurum_sahibi', 'muhasebeci'] as string[],
   gerekenYetki: 'muhasebe_yonet',
+}
+
+const BILDIRIM_DEVAMSIZLIK_YETKI = {
+  gerekenRoller: ['kurum_sahibi', 'ogretmen'] as string[],
+  gerekenYetki: 'bildirim_gonder',
+}
+
+const BILDIRIM_ODEME_YETKI = {
+  gerekenRoller: ['kurum_sahibi', 'muhasebeci'] as string[],
+  gerekenYetki: 'bildirim_gonder',
+}
+
+const BILDIRIM_GECMIS_YETKI = {
+  gerekenRoller: ['kurum_sahibi', 'ogretmen', 'muhasebeci'] as string[],
+  gerekenYetki: 'bildirim_gonder',
 }
 
 const menuSections: MenuSection[] = [
@@ -60,6 +76,14 @@ const menuSections: MenuSection[] = [
       { to: '/muhasebe/giderler', label: 'Giderler', ...MUHASEBE_YETKI },
     ],
   },
+  {
+    title: 'Bildirimler',
+    items: [
+      { to: '/bildirim/devamsizlik', label: 'Devamsızlık Bildirimi', ...BILDIRIM_DEVAMSIZLIK_YETKI },
+      { to: '/bildirim/odeme-hatirlatma', label: 'Ödeme Hatırlatma', ...BILDIRIM_ODEME_YETKI },
+      { to: '/bildirim/gecmis', label: 'Bildirim Geçmişi', ...BILDIRIM_GECMIS_YETKI },
+    ],
+  },
 ]
 
 function getDisplayName(ad: string | null, soyad: string | null, fallback: string) {
@@ -86,6 +110,7 @@ export default function Layout() {
   const kurumAdi = profile?.kurum_adi ?? profile?.kurum_id ?? 'Kurum'
 
   return (
+    <AbonelikKoruma>
     <div className="flex min-h-screen bg-slate-100">
       <aside className="w-64 border-r border-slate-200 bg-white p-4">
         <h1 className="mb-6 text-lg font-semibold text-slate-900">ReBSis</h1>
@@ -145,5 +170,6 @@ export default function Layout() {
         </main>
       </div>
     </div>
+    </AbonelikKoruma>
   )
 }

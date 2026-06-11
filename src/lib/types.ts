@@ -82,3 +82,21 @@ export type Gider = {
   created_at: string
   profiles?: { ad: string; soyad: string } | null
 }
+
+export type BildirimTipi = 'sms' | 'eposta'
+
+export type BildirimDurum = 'gonderildi' | 'test' | 'hata'
+
+export type Bildirim = {
+  id: string
+  kurum_id: string
+  tip: BildirimTipi
+  alici_telefon: string | null
+  alici_eposta: string | null
+  konu: string | null
+  mesaj: string | null
+  durum: BildirimDurum
+  ilgili_tip: string | null
+  ilgili_id: string | null
+  created_at: string
+}
