@@ -13,6 +13,11 @@ import OgretmenEkle from './pages/OgretmenEkle'
 import Onboarding from './pages/Onboarding'
 import Devamsizlik from './pages/Devamsizlik'
 import DevamsizlikRapor from './pages/DevamsizlikRapor'
+import GiderListesi from './pages/muhasebe/GiderListesi'
+import MuhasebeDashboard from './pages/muhasebe/MuhasebeDashboard'
+import SozlesmeDetay from './pages/muhasebe/SozlesmeDetay'
+import SozlesmeListesi from './pages/muhasebe/SozlesmeListesi'
+import TahsilatGecmisi from './pages/muhasebe/TahsilatGecmisi'
 import Siniflar from './pages/Siniflar'
 import Signup from './pages/Signup'
 
@@ -88,6 +93,46 @@ export default function App() {
           }
         />
         <Route path="/devamsizlik-rapor" element={<DevamsizlikRapor />} />
+        <Route
+          path="/muhasebe"
+          element={
+            <RequireYetki gerekenRoller={['kurum_sahibi', 'muhasebeci']} gerekenYetki="muhasebe_yonet">
+              <MuhasebeDashboard />
+            </RequireYetki>
+          }
+        />
+        <Route
+          path="/muhasebe/sozlesmeler"
+          element={
+            <RequireYetki gerekenRoller={['kurum_sahibi', 'muhasebeci']} gerekenYetki="muhasebe_yonet">
+              <SozlesmeListesi />
+            </RequireYetki>
+          }
+        />
+        <Route
+          path="/muhasebe/sozlesmeler/:id"
+          element={
+            <RequireYetki gerekenRoller={['kurum_sahibi', 'muhasebeci']} gerekenYetki="muhasebe_yonet">
+              <SozlesmeDetay />
+            </RequireYetki>
+          }
+        />
+        <Route
+          path="/muhasebe/tahsilatlar"
+          element={
+            <RequireYetki gerekenRoller={['kurum_sahibi', 'muhasebeci']} gerekenYetki="muhasebe_yonet">
+              <TahsilatGecmisi />
+            </RequireYetki>
+          }
+        />
+        <Route
+          path="/muhasebe/giderler"
+          element={
+            <RequireYetki gerekenRoller={['kurum_sahibi', 'muhasebeci']} gerekenYetki="muhasebe_yonet">
+              <GiderListesi />
+            </RequireYetki>
+          }
+        />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
