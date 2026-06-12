@@ -41,13 +41,6 @@
     }
   },
   "plugins": {
-    "updater": {
-      "active": true,
-      "endpoints": [
-        "https://rebsis-updater.vercel.app/api/update/{{target}}/{{arch}}/{{current_version}}"
-      ],
-      "dialog": true,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEExRjE4QkY4OEY2QkNERjYKUldUMnpXdVArSXZ4b2MxS0ZBcUcwVUpweXlzc2txQWxDWXhlUmYrcGpCSzExZWNGcUlYdzdCRmwK"
-    }
+    "opener": {}
   }
 }
