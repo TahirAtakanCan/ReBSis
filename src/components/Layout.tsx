@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 
 import AbonelikKoruma from './AbonelikKoruma'
@@ -92,22 +93,26 @@ function getDisplayName(ad: string | null, soyad: string | null, fallback: strin
 }
 
 export default function Layout() {
-  const { profile, user, signOut } = useAuth()
+  const { profile, kurumAd, user, signOut } = useAuth()
 
-  const visibleSections = menuSections
-    .map((section) => ({
-      ...section,
-      items: section.items.filter((item) =>
-        kullaniciYetkiliMi(profile, {
-          gerekenRoller: item.gerekenRoller,
-          gerekenYetki: item.gerekenYetki,
-        })
-      ),
-    }))
-    .filter((section) => section.items.length > 0)
+  const visibleSections = useMemo(
+    () =>
+      menuSections
+        .map((section) => ({
+          ...section,
+          items: section.items.filter((item) =>
+            kullaniciYetkiliMi(profile, {
+              gerekenRoller: item.gerekenRoller,
+              gerekenYetki: item.gerekenYetki,
+            }),
+          ),
+        }))
+        .filter((section) => section.items.length > 0),
+    [profile],
+  )
 
   const kullaniciAdi = getDisplayName(profile?.ad ?? null, profile?.soyad ?? null, user?.email ?? 'Kullanıcı')
-  const kurumAdi = profile?.kurum_adi ?? profile?.kurum_id ?? 'Kurum'
+  const kurumAdi = kurumAd || 'Kurum'
 
   return (
     <AbonelikKoruma>

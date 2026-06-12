@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 
 import { useAuth } from '../lib/auth'
+import { EMPTY_ARRAY } from '../lib/constants'
 import { supabase } from '../lib/supabase'
 
 type Sinif = {
@@ -83,22 +84,24 @@ export default function Ogrenciler() {
   })
 
   const {
-    data: ogrenciler = [],
+    data: ogrencilerData,
     isLoading: ogrencilerLoading,
     error: ogrencilerError,
   } = useQuery({
     queryKey: ['ogrenciler'],
     queryFn: fetchOgrenciler,
   })
+  const ogrenciler = ogrencilerData ?? EMPTY_ARRAY
 
   const {
-    data: siniflar = [],
+    data: siniflarData,
     isLoading: siniflarLoading,
     error: siniflarError,
   } = useQuery({
     queryKey: ['siniflar'],
     queryFn: fetchSiniflar,
   })
+  const siniflar = siniflarData ?? EMPTY_ARRAY
 
   const saveMutation = useMutation({
     mutationFn: async (values: OgrenciFormValues) => {
@@ -164,15 +167,11 @@ export default function Ogrenciler() {
     },
   })
 
-  const editingRecord = useMemo(
-    () => ogrenciler.find((ogrenci) => ogrenci.id === editingId) ?? null,
-    [editingId, ogrenciler]
-  )
-
   useEffect(() => {
-    if (!editingRecord) {
-      return
-    }
+    if (!editingId) return
+
+    const editingRecord = ogrenciler.find((ogrenci) => ogrenci.id === editingId)
+    if (!editingRecord) return
 
     reset({
       ad: editingRecord.ad,
@@ -182,7 +181,7 @@ export default function Ogrenciler() {
       veli_telefon: editingRecord.veli_telefon ?? '',
       durum: editingRecord.durum,
     })
-  }, [editingRecord, reset])
+  }, [editingId, ogrenciler, reset])
 
   const onSubmit = async (values: OgrenciFormValues) => {
     setFormError(null)

@@ -1,9 +1,9 @@
 import { useAuth } from '../lib/auth'
 
 export default function Dashboard() {
-  const { profile } = useAuth()
+  const { profile, kurumAd } = useAuth()
 
-  const kurumAdi = profile?.kurum_adi ?? profile?.kurum_id ?? '-'
+  const kurumAdi = kurumAd || '-'
   const rol = profile?.rol ?? '-'
 
   return (

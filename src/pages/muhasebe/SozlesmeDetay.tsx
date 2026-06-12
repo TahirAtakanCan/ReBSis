@@ -9,6 +9,7 @@ import {
   TAKSIT_DURUM_RENK,
   tarihFormatla,
 } from '../../lib/muhasebe'
+import { EMPTY_ARRAY } from '../../lib/constants'
 import { supabase } from '../../lib/supabase'
 import type { Sozlesme, Taksit } from '../../lib/types'
 
@@ -176,7 +177,7 @@ export default function SozlesmeDetay() {
   })
 
   const {
-    data: taksitler = [],
+    data: taksitlerData,
     isLoading: taksitlerLoading,
     error: taksitlerError,
   } = useQuery({
@@ -184,6 +185,7 @@ export default function SozlesmeDetay() {
     queryFn: () => fetchTaksitler(id!),
     enabled: Boolean(id),
   })
+  const taksitler = taksitlerData ?? EMPTY_ARRAY
 
   const taksitToplam = useMemo(
     () => taksitler.reduce((acc, t) => acc + Number(t.tutar), 0),

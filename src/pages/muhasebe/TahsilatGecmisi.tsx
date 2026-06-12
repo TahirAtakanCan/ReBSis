@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { indirMakbuzPdf } from '../../components/muhasebe/MakbuzPDF'
 import { useAuth } from '../../lib/auth'
+import { EMPTY_ARRAY } from '../../lib/constants'
 import { ODEME_YONTEMI_ETIKET, paraFormatla, tarihFormatla } from '../../lib/muhasebe'
 import { supabase } from '../../lib/supabase'
 import type { Makbuz, OdemeYontemi } from '../../lib/types'
@@ -52,10 +53,11 @@ export default function TahsilatGecmisi() {
   const [indirilenId, setIndirilenId] = useState<string | null>(null)
   const [indirmeHata, setIndirmeHata] = useState<string | null>(null)
 
-  const { data: tahsilatlar = [], isLoading, error } = useQuery({
+  const { data: tahsilatlarData, isLoading, error } = useQuery({
     queryKey: ['tahsilatlar'],
     queryFn: fetchTahsilatGecmisi,
   })
+  const tahsilatlar = tahsilatlarData ?? EMPTY_ARRAY
 
   const makbuzIndir = async (kayit: TahsilatKaydi) => {
     setIndirmeHata(null)

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 
+import { EMPTY_ARRAY } from '../lib/constants'
 import { supabase } from '../lib/supabase'
 import type { DevamsizlikDurum } from '../lib/types'
 
@@ -83,13 +84,14 @@ export default function DevamsizlikRapor() {
   const [bitis, setBitis] = useState(bugununTarihi)
   const [sinifId, setSinifId] = useState('')
 
-  const { data: siniflar = [] } = useQuery({
+  const { data: siniflarData } = useQuery({
     queryKey: ['siniflar'],
     queryFn: fetchSiniflar,
   })
+  const siniflar = siniflarData ?? EMPTY_ARRAY
 
   const {
-    data: kayitlar = [],
+    data: kayitlarData,
     isLoading,
     error,
     refetch,
@@ -99,6 +101,7 @@ export default function DevamsizlikRapor() {
     queryFn: () => fetchDevamsizlikRapor(baslangic, bitis),
     enabled: Boolean(baslangic && bitis && baslangic <= bitis),
   })
+  const kayitlar = kayitlarData ?? EMPTY_ARRAY
 
   const filtrelenmisKayitlar = useMemo(() => {
     if (!sinifId) return kayitlar

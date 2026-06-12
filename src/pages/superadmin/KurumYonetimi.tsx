@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import AbonelikDuzenleModal from '../../components/superadmin/AbonelikDuzenleModal'
+import { EMPTY_ARRAY } from '../../lib/constants'
 import { tarihFormatla } from '../../lib/muhasebe'
 import { ABONELIK_DURUM_ETIKET, superadminCagir } from '../../lib/superadmin'
 
@@ -39,10 +40,11 @@ export default function KurumYonetimi() {
   const [duzenlenenKurum, setDuzenlenenKurum] = useState<Kurum | null>(null)
   const [islemHata, setIslemHata] = useState<string | null>(null)
 
-  const { data: kurumlar = [], isLoading, error } = useQuery({
+  const { data: kurumlarData, isLoading, error } = useQuery({
     queryKey: ['superadmin-kurumlar'],
     queryFn: fetchKurumlar,
   })
+  const kurumlar = kurumlarData ?? EMPTY_ARRAY
 
   const pasifYapMutation = useMutation({
     mutationFn: async (kurumId: string) => {

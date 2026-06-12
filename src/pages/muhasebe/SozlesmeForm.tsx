@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 
 import { useAuth } from '../../lib/auth'
+import { EMPTY_ARRAY } from '../../lib/constants'
 import { hesaplaNetTutar, hesaplaTaksitler, paraFormatla } from '../../lib/muhasebe'
 import { supabase } from '../../lib/supabase'
 import OgrenciSecici from './OgrenciSecici'
@@ -53,10 +54,11 @@ export default function SozlesmeForm({ onClose, onSuccess }: SozlesmeFormProps) 
   const queryClient = useQueryClient()
   const { profile } = useAuth()
 
-  const { data: ogrenciler = [], isLoading: ogrencilerLoading } = useQuery({
+  const { data: ogrencilerData, isLoading: ogrencilerLoading } = useQuery({
     queryKey: ['ogrenciler', 'aktif'],
     queryFn: fetchAktifOgrenciler,
   })
+  const ogrenciler = ogrencilerData ?? EMPTY_ARRAY
 
   const {
     register,

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { useAuth } from '../lib/auth'
+import { EMPTY_ARRAY } from '../lib/constants'
 import { supabase } from '../lib/supabase'
 
 type Sinif = {
@@ -30,13 +31,14 @@ export default function Siniflar() {
   const [formError, setFormError] = useState<string | null>(null)
 
   const {
-    data: siniflar = [],
+    data: siniflarData,
     isLoading,
     error,
   } = useQuery({
     queryKey: ['siniflar'],
     queryFn: fetchSiniflar,
   })
+  const siniflar = siniflarData ?? EMPTY_ARRAY
 
   const createMutation = useMutation({
     mutationFn: async (ad: string) => {

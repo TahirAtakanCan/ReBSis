@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import GiderForm from '../../components/muhasebe/GiderForm'
+import { EMPTY_ARRAY } from '../../lib/constants'
 import {
   AY_ADLARI,
   GIDER_KATEGORI_ETIKET,
@@ -32,10 +33,11 @@ export default function GiderListesi() {
   const [filtreYil, setFiltreYil] = useState(simdikiYil)
   const [filtreKategori, setFiltreKategori] = useState<GiderKategori | ''>('')
 
-  const { data: giderler = [], isLoading, error } = useQuery({
+  const { data: giderlerData, isLoading, error } = useQuery({
     queryKey: ['giderler'],
     queryFn: fetchGiderler,
   })
+  const giderler = giderlerData ?? EMPTY_ARRAY
 
   const filtrelenmis = useMemo(() => {
     return giderler.filter((g) => {

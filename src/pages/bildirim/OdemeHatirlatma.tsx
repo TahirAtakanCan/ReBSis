@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 
 import { useAuth } from '../../lib/auth'
+import { EMPTY_ARRAY } from '../../lib/constants'
 import { smsSend } from '../../lib/bildirim'
 import { bugununTarihi, paraFormatla, tarihFormatla } from '../../lib/muhasebe'
 import { supabase } from '../../lib/supabase'
@@ -61,12 +62,23 @@ export default function OdemeHatirlatma() {
   const [gonderiliyor, setGonderiliyor] = useState(false)
   const [ozet, setOzet] = useState<{ basarili: number; hata: number } | null>(null)
 
-  const { data: taksitler = [], isLoading } = useQuery({
+  const { data: taksitlerData, isLoading } = useQuery({
     queryKey: ['geciken-taksitler-bildirim', bugun],
     queryFn: () => fetchGecikenTaksitler(bugun),
   })
+  const taksitler = taksitlerData ?? EMPTY_ARRAY
+
+  const listeAnahtari = useMemo(
+    () => `${bugun}|${taksitler.map((t) => t.id).join(',')}`,
+    [bugun, taksitler],
+  )
+
+  const senkronAnahtarRef = useRef('')
 
   useEffect(() => {
+    if (senkronAnahtarRef.current === listeAnahtari) return
+    senkronAnahtarRef.current = listeAnahtari
+
     const yeniSecimler: Record<string, boolean> = {}
     for (const t of taksitler) {
       const tel = t.sozlesmeler?.ogrenciler?.veli_telefon?.trim()
@@ -75,7 +87,7 @@ export default function OdemeHatirlatma() {
     setSecimler(yeniSecimler)
     setGonderimDurumlari({})
     setOzet(null)
-  }, [taksitler])
+  }, [listeAnahtari, taksitler])
 
   const secimDegistir = (id: string, secili: boolean) => {
     setSecimler((prev) => ({ ...prev, [id]: secili }))

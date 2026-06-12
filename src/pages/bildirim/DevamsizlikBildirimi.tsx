@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 
 import { useAuth } from '../../lib/auth'
+import { EMPTY_ARRAY } from '../../lib/constants'
 import { smsSend } from '../../lib/bildirim'
 import { tarihFormatla } from '../../lib/muhasebe'
 import { supabase } from '../../lib/supabase'
@@ -69,23 +70,35 @@ export default function DevamsizlikBildirimi() {
   const [gonderiliyor, setGonderiliyor] = useState(false)
   const [ozet, setOzet] = useState<{ basarili: number; hata: number } | null>(null)
 
-  const { data: siniflar = [] } = useQuery({
+  const { data: siniflarData } = useQuery({
     queryKey: ['siniflar'],
     queryFn: fetchSiniflar,
   })
+  const siniflar = siniflarData ?? EMPTY_ARRAY
 
-  const { data: kayitlar = [], isLoading } = useQuery({
+  const { data: kayitlarData, isLoading } = useQuery({
     queryKey: ['devamsizlik-bildirim', tarih],
     queryFn: () => fetchDevamsizlikYok(tarih),
     enabled: Boolean(tarih),
   })
+  const kayitlar = kayitlarData ?? EMPTY_ARRAY
 
   const filtrelenmis = useMemo(() => {
     if (!sinifId) return kayitlar
     return kayitlar.filter((k) => k.ogrenciler?.sinif_id === sinifId)
   }, [kayitlar, sinifId])
 
+  const listeAnahtari = useMemo(
+    () => `${tarih}|${sinifId}|${kayitlar.map((k) => k.id).join(',')}`,
+    [tarih, sinifId, kayitlar],
+  )
+
+  const senkronAnahtarRef = useRef('')
+
   useEffect(() => {
+    if (senkronAnahtarRef.current === listeAnahtari) return
+    senkronAnahtarRef.current = listeAnahtari
+
     const yeniSecimler: Record<string, boolean> = {}
     for (const kayit of filtrelenmis) {
       const tel = kayit.ogrenciler?.veli_telefon?.trim()
@@ -94,7 +107,7 @@ export default function DevamsizlikBildirimi() {
     setSecimler(yeniSecimler)
     setGonderimDurumlari({})
     setOzet(null)
-  }, [filtrelenmis])
+  }, [listeAnahtari, filtrelenmis])
 
   const secimDegistir = (id: string, secili: boolean) => {
     setSecimler((prev) => ({ ...prev, [id]: secili }))

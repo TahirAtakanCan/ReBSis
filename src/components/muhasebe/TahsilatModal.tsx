@@ -1,10 +1,11 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 
 import { useAuth } from '../../lib/auth'
+import { EMPTY_ARRAY } from '../../lib/constants'
 import {
   ODEME_YONTEMI_ETIKET,
   paraFormatla,
@@ -51,10 +52,11 @@ export default function TahsilatModal({ taksit, sozlesme, onClose, onSuccess }: 
   const queryClient = useQueryClient()
   const { profile } = useAuth()
 
-  const { data: tahsilatlar = [], isLoading } = useQuery({
+  const { data: tahsilatlarData, isLoading } = useQuery({
     queryKey: ['tahsilatlar', taksit.id],
     queryFn: () => fetchTahsilatlar(taksit.id),
   })
+  const tahsilatlar = tahsilatlarData ?? EMPTY_ARRAY
 
   const borc = taksitBorcu(taksit)
   const toplamOdenen = useMemo(
@@ -80,16 +82,22 @@ export default function TahsilatModal({ taksit, sozlesme, onClose, onSuccess }: 
     },
   })
 
+  const formAnahtariRef = useRef('')
+
   useEffect(() => {
-    if (!isLoading && kalanTutar > 0) {
-      reset({
-        tutar: kalanTutar,
-        odeme_yontemi: 'nakit',
-        odeme_tarihi: bugununTarihi(),
-        aciklama: '',
-      })
-    }
-  }, [isLoading, kalanTutar, reset])
+    if (isLoading || kalanTutar <= 0) return
+
+    const formAnahtari = `${taksit.id}:${kalanTutar}:${tahsilatlar.length}`
+    if (formAnahtariRef.current === formAnahtari) return
+    formAnahtariRef.current = formAnahtari
+
+    reset({
+      tutar: kalanTutar,
+      odeme_yontemi: 'nakit',
+      odeme_tarihi: bugununTarihi(),
+      aciklama: '',
+    })
+  }, [isLoading, kalanTutar, reset, taksit.id, tahsilatlar.length])
 
   const kaydetMutation = useMutation({
     mutationFn: async (values: TahsilatFormValues) => {

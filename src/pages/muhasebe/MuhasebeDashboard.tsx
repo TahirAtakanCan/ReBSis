@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 
 import { useAuth } from '../../lib/auth'
+import { EMPTY_ARRAY } from '../../lib/constants'
 import {
   AY_ADLARI,
   bugununTarihi,
@@ -149,33 +150,33 @@ export default function MuhasebeDashboard() {
     [filtreYil, filtreAy]
   )
 
-  const bugun = bugununTarihi()
+  const bugun = useMemo(() => bugununTarihi(), [])
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['muhasebe-dashboard', profile?.kurum_id, donemBaslangic, donemBitis],
+    queryKey: ['muhasebe-dashboard', profile?.kurum_id, donemBaslangic, donemBitis, bugun],
     queryFn: () => fetchDashboardVerileri(profile!.kurum_id!, donemBaslangic, donemBitis, bugun),
     enabled: Boolean(profile?.kurum_id),
   })
 
+  const tahsilatlar = data?.tahsilatlar ?? EMPTY_ARRAY
+  const giderler = data?.giderler ?? EMPTY_ARRAY
+  const gecikenTaksitler = data?.gecikenTaksitler ?? EMPTY_ARRAY
+
   const toplamTahsilat = useMemo(
-    () => data?.tahsilatlar.reduce((acc, t) => acc + Number(t.tutar), 0) ?? 0,
-    [data?.tahsilatlar]
+    () => tahsilatlar.reduce((acc, t) => acc + Number(t.tutar), 0),
+    [tahsilatlar],
   )
 
   const toplamGider = useMemo(
-    () => data?.giderler.reduce((acc, g) => acc + Number(g.tutar), 0) ?? 0,
-    [data?.giderler]
+    () => giderler.reduce((acc, g) => acc + Number(g.tutar), 0),
+    [giderler],
   )
 
   const netBakiye = Math.round((toplamTahsilat - toplamGider) * 100) / 100
 
   const gecikenToplam = useMemo(
-    () =>
-      data?.gecikenTaksitler.reduce(
-        (acc, t) => acc + taksitBorcu(t),
-        0
-      ) ?? 0,
-    [data?.gecikenTaksitler]
+    () => gecikenTaksitler.reduce((acc, t) => acc + taksitBorcu(t), 0),
+    [gecikenTaksitler],
   )
 
   return (
@@ -232,13 +233,13 @@ export default function MuhasebeDashboard() {
             <OzetKart
               baslik="Toplam Tahsilat"
               tutar={paraFormatla(toplamTahsilat)}
-              adet={data.tahsilatlar.length}
+              adet={tahsilatlar.length}
               renk="emerald"
             />
             <OzetKart
               baslik="Toplam Gider"
               tutar={paraFormatla(toplamGider)}
-              adet={data.giderler.length}
+              adet={giderler.length}
             />
             <OzetKart
               baslik="Net Bakiye"
@@ -248,7 +249,7 @@ export default function MuhasebeDashboard() {
             <OzetKart
               baslik="Geciken Taksitler"
               tutar={paraFormatla(gecikenToplam)}
-              adet={data.gecikenTaksitler.length}
+              adet={gecikenTaksitler.length}
               altMetin="vadesi geçmiş"
               renk="red"
             />

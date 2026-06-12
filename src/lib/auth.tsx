@@ -51,6 +51,7 @@ type AuthContextValue = {
   user: User | null
   session: Session | null
   profile: Profile | null
+  kurumAd: string
   loading: boolean
   profileLoading: boolean
   kurumAktif: boolean
@@ -72,6 +73,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [authLoading, setAuthLoading] = useState(true)
   const [profileLoading, setProfileLoading] = useState(false)
   const [profileFetched, setProfileFetched] = useState(false)
+  const [kurumAd, setKurumAd] = useState('')
   const [kurumAktif, setKurumAktif] = useState(false)
   const [kurumAktifLoading, setKurumAktifLoading] = useState(false)
 
@@ -133,6 +135,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(nextSession?.user ?? null)
       if (event === 'SIGNED_OUT') {
         setProfile(null)
+        setKurumAd('')
         setProfileFetched(false)
         setProfileLoading(false)
         setKurumAktif(false)
@@ -226,13 +229,44 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [profile?.id])
 
-  const loading = authLoading || profileLoading || (!!user && !profileFetched)
+  useEffect(() => {
+    let isCancelled = false
+
+    const loadKurumAd = async () => {
+      if (!profile?.kurum_id) {
+        if (!isCancelled) setKurumAd('')
+        return
+      }
+
+      const { data } = await supabase
+        .from('kurumlar')
+        .select('ad')
+        .eq('id', profile.kurum_id)
+        .single()
+
+      if (!isCancelled) {
+        setKurumAd(data?.ad ?? '')
+      }
+    }
+
+    void loadKurumAd()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [profile?.kurum_id])
+
+  const loading = useMemo(
+    () => authLoading || profileLoading || (!!user && !profileFetched),
+    [authLoading, profileLoading, profileFetched, user],
+  )
 
   const value = useMemo(
     () => ({
       user,
       session,
       profile,
+      kurumAd,
       loading,
       profileLoading,
       kurumAktif,
@@ -240,7 +274,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       signOut,
       refreshProfile,
     }),
-    [kurumAktif, kurumAktifLoading, loading, profile, profileLoading, refreshProfile, session, signOut, user]
+    [kurumAd, kurumAktif, kurumAktifLoading, loading, profile, profileLoading, refreshProfile, session, signOut, user]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 
+import { EMPTY_ARRAY } from '../../lib/constants'
 import { supabase } from '../../lib/supabase'
 import { tarihFormatla } from '../../lib/muhasebe'
 
@@ -23,10 +24,11 @@ async function fetchSuperAdminLog() {
 }
 
 export default function SuperAdminLog() {
-  const { data: kayitlar = [], isLoading, error } = useQuery({
+  const { data: kayitlarData, isLoading, error } = useQuery({
     queryKey: ['superadmin-log'],
     queryFn: fetchSuperAdminLog,
   })
+  const kayitlar = kayitlarData ?? EMPTY_ARRAY
 
   return (
     <div className="space-y-6">

@@ -2,6 +2,7 @@ import { useMemo, useState, type ChangeEvent } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as XLSX from 'xlsx'
 
+import { EMPTY_ARRAY } from '../lib/constants'
 import { supabase } from '../lib/supabase'
 
 type OgretmenInput = {
@@ -60,13 +61,14 @@ export default function OgretmenEkle() {
   const [dosyaHatasi, setDosyaHatasi] = useState<string | null>(null)
 
   const {
-    data: mevcutOgretmenler = [],
+    data: mevcutOgretmenlerData,
     isLoading: ogretmenlerLoading,
     error: ogretmenlerError,
   } = useQuery({
     queryKey: ['ogretmenler'],
     queryFn: fetchOgretmenler,
   })
+  const mevcutOgretmenler = mevcutOgretmenlerData ?? EMPTY_ARRAY
 
   const invokeMutation = useMutation({
     mutationFn: async (payload: OgretmenInput[]) => {

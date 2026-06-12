@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { BILDIRIM_DURUM_ETIKET, BILDIRIM_DURUM_RENK } from '../../lib/bildirim'
 import { tarihFormatla } from '../../lib/muhasebe'
+import { EMPTY_ARRAY } from '../../lib/constants'
 import { supabase } from '../../lib/supabase'
 import type { Bildirim } from '../../lib/types'
 
@@ -27,10 +28,11 @@ function mesajKisalt(mesaj: string | null, max = 60) {
 }
 
 export default function BildirimGecmisi() {
-  const { data: kayitlar = [], isLoading, error } = useQuery({
+  const { data: kayitlarData, isLoading, error } = useQuery({
     queryKey: ['bildirimler'],
     queryFn: fetchBildirimler,
   })
+  const kayitlar = kayitlarData ?? EMPTY_ARRAY
 
   return (
     <div className="space-y-6">

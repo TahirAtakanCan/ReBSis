@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { useAuth } from '../lib/auth'
+import { EMPTY_ARRAY } from '../lib/constants'
 import { supabase } from '../lib/supabase'
 import type { Devamsizlik, DevamsizlikDurum, YoklamaDurum } from '../lib/types'
 
@@ -84,27 +85,43 @@ export default function Devamsizlik() {
   const [bildirim, setBildirim] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
 
-  const { data: siniflar = [], isLoading: siniflarLoading } = useQuery({
+  const { data: siniflarData, isLoading: siniflarLoading } = useQuery({
     queryKey: ['siniflar'],
     queryFn: fetchSiniflar,
   })
+  const siniflar = siniflarData ?? EMPTY_ARRAY
 
-  const { data: ogrenciler = [], isLoading: ogrencilerLoading } = useQuery({
+  const { data: ogrencilerData, isLoading: ogrencilerLoading } = useQuery({
     queryKey: ['ogrenciler', sinifId],
     queryFn: () => fetchOgrenciler(sinifId),
     enabled: Boolean(sinifId),
   })
+  const ogrenciler = ogrencilerData ?? EMPTY_ARRAY
 
   const ogrenciIds = useMemo(() => ogrenciler.map((o) => o.id), [ogrenciler])
 
-  const { data: devamsizlikKayitlari = [], isLoading: devamsizlikLoading } = useQuery({
+  const { data: devamsizlikData, isLoading: devamsizlikLoading } = useQuery({
     queryKey: ['devamsizlik', sinifId, tarih],
     queryFn: () => fetchDevamsizlik(ogrenciIds, tarih),
     enabled: Boolean(sinifId) && ogrenciIds.length > 0,
   })
+  const devamsizlikKayitlari = devamsizlikData ?? EMPTY_ARRAY
+
+  const veriAnahtari = useMemo(
+    () =>
+      `${sinifId}|${tarih}|${ogrenciler.map((o) => o.id).join(',')}|${devamsizlikKayitlari
+        .map((k) => `${k.ogrenci_id}:${k.durum}`)
+        .join(',')}`,
+    [sinifId, tarih, ogrenciler, devamsizlikKayitlari],
+  )
+
+  const senkronAnahtarRef = useRef('')
 
   useEffect(() => {
-    if (ogrenciler.length === 0) {
+    if (senkronAnahtarRef.current === veriAnahtari) return
+    senkronAnahtarRef.current = veriAnahtari
+
+    if (!sinifId || ogrenciler.length === 0) {
       setSecimler({})
       setKayitliSecimler({})
       return
@@ -113,7 +130,7 @@ export default function Devamsizlik() {
     const harita = kayitlardanDurumHaritasi(ogrenciler, devamsizlikKayitlari)
     setSecimler(harita)
     setKayitliSecimler(harita)
-  }, [ogrenciler, devamsizlikKayitlari])
+  }, [veriAnahtari, sinifId, ogrenciler, devamsizlikKayitlari])
 
   const degisiklikVar = useMemo(() => {
     const tumIdler = new Set([...Object.keys(secimler), ...Object.keys(kayitliSecimler)])

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 
+import { EMPTY_ARRAY } from '../../lib/constants'
 import { paraFormatla, tarihFormatla } from '../../lib/muhasebe'
 import { supabase } from '../../lib/supabase'
 import type { Sozlesme } from '../../lib/types'
@@ -21,10 +22,11 @@ export default function SozlesmeListesi() {
   const navigate = useNavigate()
   const [formAcik, setFormAcik] = useState(false)
 
-  const { data: sozlesmeler = [], isLoading, error } = useQuery({
+  const { data: sozlesmelerData, isLoading, error } = useQuery({
     queryKey: ['sozlesmeler'],
     queryFn: fetchSozlesmeler,
   })
+  const sozlesmeler = sozlesmelerData ?? EMPTY_ARRAY
 
   return (
     <div className="space-y-6">
